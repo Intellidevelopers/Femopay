@@ -16,6 +16,7 @@ import AddName from "./screens/AddName";
 import BottomTab from "./components/BottomTab";
 import Login from "./screens/Login";
 import EmailVerify from "./screens/EmailVerify";
+import ProfileSetup from "./screens/ProfileSetup";
 
 SplashScreen.preventAutoHideAsync(); // Prevent splash screen from auto-hiding
 
@@ -51,6 +52,7 @@ export default function App() {
           <Stack.Screen name="AddName" component={AddName} />
           <Stack.Screen name="Login" component={Login} />
           <Stack.Screen name="EmailVerify" component={EmailVerify} />
+          <Stack.Screen name="ProfileSetup" component={ProfileSetup} />
         </Stack.Navigator>
       </NavigationContainer>
     </View>

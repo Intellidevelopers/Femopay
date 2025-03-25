@@ -4,7 +4,7 @@ import { AntDesign } from "@expo/vector-icons";
 import FONTS from '../constants/fonts';
 import COLORS from '../constants/colors';
 
-const EmailVerify = () => {
+const EmailVerify = ({ navigation }) => {
   const [otp, setOtp] = useState('');
   const [timer, setTimer] = useState(60);
   const [isResendDisabled, setIsResendDisabled] = useState(true);
@@ -59,7 +59,9 @@ const EmailVerify = () => {
             </TouchableOpacity>
         </View>
         {/* Continue Button */}
-        <TouchableOpacity style={[styles.button, otp.length === 0 && styles.disabledButton]} disabled={otp.length === 0}>
+        <TouchableOpacity style={[styles.button, otp.length === 0 && styles.disabledButton]} disabled={otp.length === 0}
+            onPress={() => navigation.navigate('ProfileSetup')}
+        >
             <Text style={styles.buttonText}>Continue</Text>
         </TouchableOpacity>
       </View>
