@@ -1,15 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, KeyboardAvoidingView, Platform, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import { AntDesign } from "@expo/vector-icons";
 import FONTS from '../constants/fonts';
 import COLORS from '../constants/colors';
 import Header from '../components/Header';
+import { Modalize } from 'react-native-modalize';
 
 const ProfileSetup = ({ navigation }) => {
   const [otp, setOtp] = useState('');
   const [timer, setTimer] = useState(60);
   const [isResendDisabled, setIsResendDisabled] = useState(true);
   const [femoTag, setFemoTag] = useState('@'); // Ensure @ is always prefixed
+
+    const modalizeRef = useRef(null); // Reference to control the bottom sheet
+  
+    // Function to open the bottom sheet
+    const openCurrencyExchangeModal = () => {
+      modalizeRef.current?.open();
+    };
 
   useEffect(() => {
     let interval = null;
@@ -26,7 +34,7 @@ const ProfileSetup = ({ navigation }) => {
   }, [timer]);
 
   // Handle FemoTag input
-  const handleFemoTagChange = (text: string) => {
+  const handleFemoTagChange = (text) => {
     if (!text.startsWith('@')) {
       setFemoTag('@' + text.replace(/^@/, '')); // Ensure it always starts with @
     } else {
@@ -35,42 +43,39 @@ const ProfileSetup = ({ navigation }) => {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <View
+      style={styles.container}
+    >
       <Header title="Profile Setup" onPress={() => navigation.goBack()} />
 
       <View style={styles.content}>
+        {/* Your form content remains here */}
         <Text style={styles.title}>Complete Profile</Text>
         <Text style={styles.subtitle}>
           Please enter your personal details to complete your profile.
         </Text>
 
         <View style={styles.flexRow}>
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>First Name</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="John"
-              placeholderTextColor="#BEBEBE"
-              keyboardType="default"
-              maxLength={15}
-            />
-          </View>
-
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Last Name</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Doe"
-              placeholderTextColor="#BEBEBE"
-              keyboardType="default"
-              maxLength={15}
-            />
-          </View>
+          <TextInput
+            style={styles.input}
+            placeholder="John"
+            placeholderTextColor="#BEBEBE"
+            keyboardType="default"
+            maxLength={15}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Doe"
+            placeholderTextColor="#BEBEBE"
+            keyboardType="default"
+            maxLength={15}
+          />
         </View>
 
+        <Text style={styles.label}>FemoTag</Text>
         <View style={styles.inputContainer2}>
-          <View style={{flex: 1}}>
-            <Text style={styles.label}>FemoTag</Text>
+          <View style={{ flex: 1 }}>
             <TextInput
               style={styles.input2}
               value={femoTag}
@@ -80,18 +85,35 @@ const ProfileSetup = ({ navigation }) => {
               keyboardType="default"
             />
           </View>
-          <AntDesign name="exclamationcircle" size={20} color={'#888'} />
+          <TouchableOpacity onPress={openCurrencyExchangeModal}>
+            <AntDesign name="exclamationcircle" size={20} color={'#888'} />
+          </TouchableOpacity>
         </View>
       </View>
 
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate('SetTransactionPin')}
+      >
+        <Text style={styles.buttonText}>Continue</Text>
+      </TouchableOpacity>
+      <Modalize
+            ref={modalizeRef}
+            snapPoint={220} // Set the height of the bottom sheet
+            modalHeight={220} // Set the maximum height
+            withHandle={false} // Optionally disable the handle for more compact design
+          >
+            <View style={styles.bottomSheetContent}>
+              <Text style={styles.bottomSheetTitle}>What is FemoTag?</Text>
+              <Text style={styles.subText}>
+                FemoTag is a unique identifier that allows you to send and receive money instantly within the FemoPay network. It is your personalized tag that makes transactions easier and faster.
+              </Text>
+            </View>
+          </Modalize>
+    </View>
+          
+    </TouchableWithoutFeedback>
 
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => navigation.navigate('ProfileSetup')}
-        >
-          <Text style={styles.buttonText}>Continue</Text>
-        </TouchableOpacity>
-    </ScrollView>
   );
 };
 
@@ -101,7 +123,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFF',
-    paddingHorizontal: 20,
+    padding: 20,
   },
   progressContainer: {
     flexDirection: 'row',
@@ -125,7 +147,7 @@ const styles = StyleSheet.create({
     fontWeight: '600'
   },
   subtitle: {
-    fontSize: 15,
+    fontSize: 14,
     color: '#666',
     marginBottom: 20,
     fontFamily: FONTS.regular
@@ -135,15 +157,19 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.bold
   },
   input: {
-    fontSize: 22,
-    color: '#666',
+    fontSize: 20,
+    color: '#000',
     fontWeight: '600',
+    backgroundColor: '#eee',
+    borderRadius: 10,
+    padding: 18,
+    width: '48%',
   },
   input2: {
     fontSize: 20,
-    color: '#666',
+    color: '#000',
     fontWeight: '600',
-    width: '100%'
+    width: '100%',
   },
   resendContainer: {
     flexDirection: 'row',
@@ -170,11 +196,11 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: COLORS.primary,
-    paddingVertical: 15,
+    paddingVertical: 16,
     borderRadius: 8,
     alignItems: 'center',
     marginBottom: 25,
-    marginTop: 100
+    marginTop: 'auto'
   },
   disabledButton: {
     backgroundColor: '#F08080',
@@ -183,24 +209,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#FFF',
   },
-  backButton:{
-    position: 'absolute',
-    left: 15,
-    top: 50,
-    zIndex: 999,
-    padding: 15,
-    backgroundColor: '#fff',
-    borderRadius: 30,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 5 },
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
   content:{
-    flex: 1,
+    marginBottom: 30
   },
   bottomContainer:{
     marginBottom: 20,
@@ -209,29 +219,45 @@ const styles = StyleSheet.create({
   inputContainer:{
     backgroundColor: '#eee',
     width: '48%',
-    paddingHorizontal: 10,
-    borderRadius: 15,
-    padding: 8
+    borderRadius: 10,
+    height: 60,
   },
   inputContainer2:{
     backgroundColor: '#eee',
-    padding: 8,
     width: '100%',
-    paddingHorizontal: 10,
-    borderRadius: 15,
+    paddingHorizontal: 15,
+    borderRadius: 10,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent:'space-between',
+    height: 65,
   },
   label:{
     fontSize: 14,
     color: '#aaa',
-    paddingHorizontal: 5,
+    marginBottom: 5,
   },
   flexRow:{
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 30,
     alignItems: 'center'
-  }
+  },
+  bottomSheetContent:{
+    padding: 20,
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+  },
+  bottomSheetTitle:{
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  subText:{
+    fontSize: 14,
+    color: "#999",
+    marginTop: 5,
+    lineHeight: 20
+  },
 });

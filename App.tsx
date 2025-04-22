@@ -17,6 +17,17 @@ import BottomTab from "./components/BottomTab";
 import Login from "./screens/Login";
 import EmailVerify from "./screens/EmailVerify";
 import ProfileSetup from "./screens/ProfileSetup";
+import SendToBank from "./screens/SendToBank";
+import BankTransfer from "./screens/BankTransfer";
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import SetTransactionPin from "./screens/SetTransactionPin";
+import VerifyTransactionPin from "./screens/VerifyTransactionPin";
+import SuccessScreen from "./screens/SuccessScreen";
+import ForgotPassword from "./screens/ForgotPassword";
+import ChangePassword from "./screens/ChangePassword";
+import Notifications from "./screens/Notifications";
+import EditProfile from "./screens/EditProfile";
+import { Provider as PaperProvider } from 'react-native-paper';
 
 SplashScreen.preventAutoHideAsync(); // Prevent splash screen from auto-hiding
 
@@ -42,19 +53,32 @@ export default function App() {
 
   return (
     <View style={styles.container} onLayout={onLayout}>
+      <PaperProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="Welcome" component={WelcomeScreen} />
-          <Stack.Screen name="AddBank" component={AddBank} />
+        <Stack.Screen name="Welcome" component={WelcomeScreen} />
           <Stack.Screen name="BottomTab" component={BottomTab} />
+          <Stack.Screen name="AddBank" component={AddBank} />
           <Stack.Screen name="Signup" component={Signup} />
           <Stack.Screen name="ConfirmationCode" component={ConfirmationCode} />
           <Stack.Screen name="AddName" component={AddName} />
           <Stack.Screen name="Login" component={Login} />
           <Stack.Screen name="EmailVerify" component={EmailVerify} />
           <Stack.Screen name="ProfileSetup" component={ProfileSetup} />
+          <Stack.Screen name="SendToBank" component={SendToBank} />
+          <Stack.Screen name="BankTransfer" component={BankTransfer} />
+          <Stack.Screen name="SetTransactionPin" component={SetTransactionPin} />
+          <Stack.Screen name="VerifyTransactionPin" component={VerifyTransactionPin} />
+          <Stack.Screen name="Success" component={SuccessScreen} />
+          <Stack.Screen name="ForgotPassword" component={ForgotPassword}/>
+          <Stack.Screen name="ChangePassword" component={ChangePassword}/>
+          <Stack.Screen name="Notifications" component={Notifications} />
+          <Stack.Screen name="EditProfile" component={EditProfile} />
         </Stack.Navigator>
       </NavigationContainer>
+      </GestureHandlerRootView>
+      </PaperProvider>
     </View>
   );
 }

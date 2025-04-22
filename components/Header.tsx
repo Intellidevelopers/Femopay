@@ -26,7 +26,6 @@ export default Header;
 
 const styles = StyleSheet.create({
   container: {
-    top: 10,
   },
   backButton: {
     backgroundColor: '#eee',
@@ -40,7 +39,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 40,
-    marginTop: 40,
+    marginTop: 35,
     alignItems: 'center',
     paddingHorizontal: 1,
   },

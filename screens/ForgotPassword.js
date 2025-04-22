@@ -7,15 +7,13 @@ import {
   StyleSheet,
   ScrollView,
 } from "react-native";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
 import COLORS from "../constants/colors";
 import { Image } from "expo-image";
 import FONTS from "../constants/fonts";
-import * as LocalAuthentication from 'expo-local-authentication';
 
-
-const Login = ({ navigation }) => {
+const ForgotPasssword = ({ navigation }) => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [focusedInput, setFocusedInput] = useState(null);
@@ -29,40 +27,11 @@ const Login = ({ navigation }) => {
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false); // Simulate API call completion
-    navigation.navigate("BottomTab");
+    navigation.navigate("ConfirmationCode");
 
     }, 2000);
     // Navigate to the next screen with the entered phone number and password
   };
-
-  const handleBiometricAuth = async () => {
-    const compatible = await LocalAuthentication.hasHardwareAsync();
-    if (!compatible) {
-      alert("Biometric authentication not supported on this device.");
-      return;
-    }
-  
-    const enrolled = await LocalAuthentication.isEnrolledAsync();
-    if (!enrolled) {
-      alert("No biometrics enrolled. Please set up Face ID or Touch ID.");
-      return;
-    }
-  
-    const types = await LocalAuthentication.supportedAuthenticationTypesAsync();
-    const isFaceID = types.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION);
-  
-    const result = await LocalAuthentication.authenticateAsync({
-      promptMessage: isFaceID ? "Use Face ID to login" : "Use Fingerprint to login",
-      fallbackLabel: "Use Passcode",
-    });
-    if (result.success) {
-      navigation.navigate("BottomTab");
-    } else {
-      alert("Authentication failed.");
-    }
-  };
-  
-  
 
   return (
     <ScrollView style={styles.container}>
@@ -70,19 +39,19 @@ const Login = ({ navigation }) => {
       <Image source={require("../assets/icons/logo.png")} style={styles.logo} />
 
       {/* Title */}
-      <Text style={styles.title}>Log In Account</Text>
+      <Text style={styles.title}>Forgot Password</Text>
 
       {/* Phone Number Input */}
       <Text style={styles.label}>{loginMethod === 'phone' ? "Phone Number" : "Email"}</Text>
         {loginMethod === 'phone' ? (
         <View
-          style={[
+            style={[
             styles.inputContainer,
             focusedInput === "phone" && styles.focusedInput,
-          ]}
+            ]}
         >
-          <Text style={styles.countryCode}>(+234)</Text>
-          <TextInput
+            <Text style={styles.countryCode}>(+234)</Text>
+            <TextInput
             style={[styles.input, { flex: 1 }]}
             keyboardType="numeric"
             placeholder="9012345678"
@@ -90,16 +59,16 @@ const Login = ({ navigation }) => {
             onChangeText={setPhone}
             onFocus={() => setFocusedInput("phone")}
             onBlur={() => setFocusedInput(null)}
-          />
+            />
         </View>
-      ) : (
+        ) : (
         <View
-          style={[
+            style={[
             styles.inputContainer,
             focusedInput === "email" && styles.focusedInput,
-          ]}
+            ]}
         >
-          <TextInput
+            <TextInput
             style={[styles.input, { flex: 1 }]}
             keyboardType="email-address"
             placeholder="example@email.com"
@@ -108,33 +77,13 @@ const Login = ({ navigation }) => {
             onFocus={() => setFocusedInput("email")}
             onBlur={() => setFocusedInput(null)}
             autoCapitalize="none"
-          />
+            />
         </View>
-      )}
+        )}
 
-      {/* Password Input */}
-      <Text style={styles.label}>Password</Text>
-      <View
-        style={[
-          styles.inputContainer,
-          styles.passwordContainer,
-          focusedInput === "password" && styles.focusedInput,
-        ]}
-      >
-        <TextInput
-          style={[styles.input, { flex: 1 }]}
-          secureTextEntry={!passwordVisible}
-          placeholder="***********"
-          onFocus={() => setFocusedInput("password")}
-          onBlur={() => setFocusedInput(null)}
-        />
-        <TouchableOpacity onPress={() => setPasswordVisible(!passwordVisible)}>
-          <Ionicons name={passwordVisible ? "eye-off" : "eye"} size={20} color="gray" />
-        </TouchableOpacity>
-      </View>
       <TouchableOpacity onPress={() => setLoginMethod(prev => prev === 'phone' ? 'email' : 'phone')}>
         <Text style={styles.emailLoginText}>
-          {loginMethod === 'phone' ? "Log in with email" : "Log in with phone number"}
+          {loginMethod === 'phone' ? "Reset with email" : "Reset with phone number"}
         </Text>
       </TouchableOpacity>
 
@@ -148,34 +97,8 @@ const Login = ({ navigation }) => {
             contentFit="contain"
           />
         ) : (
-          <Text style={styles.buttonText}>Log In</Text>
+          <Text style={styles.buttonText}>Reset Password</Text>
         )}
-      </TouchableOpacity>
-      
-
-      {/* Bottom Link */}
-      
-
-      <View style={styles.biometricContainer}>
-        <TouchableOpacity style={styles.biometricButton} onPress={handleBiometricAuth}>
-          <Ionicons name="finger-print" size={24} color="white" />
-          <Text style={styles.biometricText}>Use Biometric</Text>
-        </TouchableOpacity>
-        {/* Face  ID */}
-        <TouchableOpacity style={styles.biometricButton}>
-          <MaterialCommunityIcons name="face-recognition" size={24} color="white" />
-          <Text style={styles.biometricText}>Use Face ID</Text>
-        </TouchableOpacity>
-      </View>
-      <View style={styles.linkContainer}>
-      <Text style={styles.bottomText}>New to FemoPay? </Text>
-
-        <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
-          <Text style={styles.loginText}>Create New Account</Text>
-        </TouchableOpacity>
-      </View>
-      <TouchableOpacity style={{alignItems: 'center', alignSelf: 'center', justifyContent: 'center', marginTop: 20}} onPress={() => navigation.navigate('ForgotPassword')}>
-        <Text style={styles.forgotPassword}>Forgot Password?</Text>
       </TouchableOpacity>
       <StatusBar style="dark" backgroundColor="#fff" />
     </ScrollView>
@@ -196,9 +119,10 @@ const styles = StyleSheet.create({
     marginTop: 40,
   },
   title: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
     textAlign: "center",
+    marginTop: 20,
   },
   subtitle: {
     textAlign: "center",
@@ -273,7 +197,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   linkContainer:{
-    marginTop: 50,
+    marginTop: 20,
     marginBottom: 10,
     flexDirection: "row",
     alignItems: "center",
@@ -288,25 +212,7 @@ const styles = StyleSheet.create({
   forgotPassword:{
     textAlign: "center",
     fontFamily: FONTS.semiBold,
-  },
-  biometricContainer:{
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 40,
-  },
-  biometricButton:{
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.primary,
-    padding: 15,
-    borderRadius: 8,
-    width: '48%',
-    gap: 10
-  },
-  biometricText:{
-    color: '#fff',
-    fontWeight: 'bold'
   }
 });
 
-export default Login;
+export default ForgotPasssword;

@@ -29,7 +29,7 @@ const Signup = ({ navigation }) => {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       {/* Logo */}
       <Image source={require("../assets/icons/logo.png")} style={styles.logo} />
 
@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "white",
-    paddingHorizontal: 16,
+    padding: 16,
   },
   logo: {
     alignSelf: "center",
@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: COLORS.primary,
-    height: 50,
+    height: 55,
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 8,
@@ -235,11 +235,11 @@ const styles = StyleSheet.create({
   loginText: {
     color: "red",
     fontWeight: "500",
-    fontSize: 15,
+    fontSize: 16,
   },
   linkContainer:{
-    marginTop: 60,
-    marginBottom: 10,
+    marginTop: 'auto',
+    marginBottom: 20,
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 1,

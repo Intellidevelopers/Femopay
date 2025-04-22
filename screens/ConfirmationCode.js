@@ -12,11 +12,14 @@ import {
 import COLORS from "../constants/colors";
 import Loader from "../components/Loader";
 import { useNavigation } from "@react-navigation/native";
+import { Image } from "expo-image";
 
 const ConfirmationCode = () => {
   const navigation = useNavigation();
   const [loading, setLoading] = useState(false);
-  const [code, setCode] = useState(""); 
+  const [code, setCode] = useState("");
+  const [prevCode, setPrevCode] = useState("");
+
 
   // Function to format input dynamically as XXX - XXX
   const formatCode = (input) => {
@@ -26,15 +29,27 @@ const ConfirmationCode = () => {
   };
 
   const handleChangeText = (text) => {
-    setCode(formatCode(text));
+    const numbersOnly = text.replace(/\D/g, "");
+  
+    if (text.length < prevCode.length) {
+      // User is deleting
+      setCode(text);
+    } else {
+      // User is typing
+      const formatted = numbersOnly.replace(/^(\d{3})(\d{0,3})/, "$1 - $2").trim();
+      setCode(formatted);
+    }
+  
+    setPrevCode(text);
   };
+  
 
   const handleSubmit = () => {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
       alert("Verification Successful!");
-      navigation.navigate("AddBank");
+      navigation.navigate("ChangePassword");
     }, 3000);
   };
 
@@ -43,7 +58,7 @@ const ConfirmationCode = () => {
       <Loader visible={loading} />
       
       <View style={styles.header}>
-        <Text style={styles.questionMark}>?</Text>
+        <Image source={require('../assets/icons/message.png')} style={{width: 60, height: 60, resizeMode: 'contain'}}/>
       </View>
 
       <ScrollView style={styles.content} keyboardShouldPersistTaps="handled">
@@ -64,7 +79,7 @@ const ConfirmationCode = () => {
 
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.nextButton} onPress={handleSubmit}>
-          <Text style={styles.nextButtonText}>Next</Text>
+          <Text style={styles.nextButtonText}>Verify</Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -115,14 +130,23 @@ const styles = StyleSheet.create({
   },
   nextButton: {
     backgroundColor: COLORS.primary,
-    paddingVertical: 15,
-    borderRadius: 25,
+    height: 55,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 8,
+    marginTop: 30,
+    elevation: 5,
+    shadowColor: COLORS.black,
+    shadowOffset: 0,
+    shadowRadius: 10,
+    shadowOpacity: 0.2,
     width: "100%",
   },
   nextButtonText: {
     fontSize: 16,
     color: "#fff",
     textAlign: "center",
+    fontWeight: 'bold'
   },
   content: {
     paddingTop: 100,

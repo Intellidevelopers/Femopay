@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFF',
-    paddingHorizontal: 20,
+    padding: 16,
   },
   progressContainer: {
     flexDirection: 'row',
@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: COLORS.primary,
-    paddingVertical: 15,
+    paddingVertical: 16,
     borderRadius: 8,
     alignItems: 'center',
     marginBottom: 25

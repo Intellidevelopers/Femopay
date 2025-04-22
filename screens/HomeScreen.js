@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import {
   StyleSheet,
   Text,
@@ -13,10 +13,25 @@ import CustomBottomTab from "../components/BottomTab";
 import { AntDesign } from "react-native-vector-icons/";
 import FONTS from "../constants/fonts";
 import { StatusBar } from "expo-status-bar";
+import { Modalize } from "react-native-modalize"; // Importing the Modalize component
 
-const HomeScreen = () => {
+const HomeScreen = ({ navigation }) => {
+  const modalizeRef = useRef(null); // Reference to control the bottom sheet
+
+  // Function to open the bottom sheet
+  const openCurrencyExchangeModal = () => {
+    modalizeRef.current?.open();
+  };
+
+  const modalizeRef2 = useRef(null); // Reference to control the bottom sheet
+
+  // Function to open the bottom sheet
+  const openCurrencyExchangeModal2 = () => {
+    modalizeRef2.current?.open();
+  };
+
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* Top Balance Card */}
       <LinearGradient
         colors={["#6F0100", "#A60506"]} // Dark red on left, Light red on right
@@ -28,28 +43,32 @@ const HomeScreen = () => {
         {/* User Info */}
         <View style={styles.userRow}>
           <Image source={require('../assets/images/me.png')} style={styles.avatar} />
-          <View style={styles.currencyContainer}>
+          <TouchableOpacity onPress={openCurrencyExchangeModal} style={styles.currencyContainer}>
               <Image source={require('../assets/flag.png')} style={styles.flag} />
               <Text style={styles.currencyText}>NG Naira</Text>
               <View style={styles.currencydropdown}>
                 <AntDesign name="caretdown" size={10}/>
               </View>
-          </View>
+          </TouchableOpacity>
           <View style={styles.notificationContainer}>
             <Image source={require('../assets/icons/bookmark.png')} style={styles.icon} />
+            <TouchableOpacity onPress={() => navigation.navigate('Notifications')}>
             <Image source={require('../assets/icons/bell.png')} style={styles.icon} />
+            </TouchableOpacity>
           </View>
         </View>
 
         {/* Balance Section */}
-        <Text style={styles.balanceTitle}>Available Balance</Text>
-        <Text style={styles.balanceAmount}>₦200,500.26</Text>
+        <View style={{ marginTop: 20 }}>
+          <Text style={styles.balanceTitle}>Available Balance</Text>
+          <Text style={styles.balanceAmount}>₦200,500.26</Text>
+        </View>
 
         {/* Action Buttons */}
         
       </LinearGradient>
       <View style={styles.actionRow}>
-          <TouchableOpacity style={styles.actionButton}>
+          <TouchableOpacity onPress={openCurrencyExchangeModal2} style={styles.actionButton}>
           <Image source={require('../assets/icons/topup.png')} style={styles.tabicon} />
             <Text style={styles.actionText}>Top Up</Text>
           </TouchableOpacity>
@@ -76,7 +95,7 @@ const HomeScreen = () => {
           </View>
 
           <View style={styles.cardRow}>
-            <TouchableOpacity style={[styles.card, {backgroundColor: '#F0EFFD'}]}>
+            <TouchableOpacity onPress={() => navigation.navigate('SendToBank')} style={[styles.card, {backgroundColor: '#F0EFFD'}]}>
               <Image source={require('../assets/icons/bank.png')} style={styles.cardIcon} />
               <Text style={styles.cardText}>Send To Bank</Text>
             </TouchableOpacity>
@@ -134,7 +153,67 @@ const HomeScreen = () => {
           </View>
         </View>
       </View>
+{/* Modal Bottom Sheet */}
+      <Modalize
+        ref={modalizeRef}
+        snapPoint={320} // Set the height of the bottom sheet
+        modalHeight={350} // Set the maximum height
+        withHandle={false} // Optionally disable the handle for more compact design
+      >
+        <View style={styles.bottomSheetContent}>
+          <Text style={styles.bottomSheetTitle}>Currency Exchange</Text>
 
+          {/* Example exchange options */}
+          <TouchableOpacity style={styles.exchangeOptionButton}>
+            <Image source={require('../assets/flag.png')} style={styles.flag} />
+            <Text style={styles.optionText}>Naira</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.exchangeOptionButton}>
+            <Image source={require('../assets/flag.png')} style={styles.flag} />
+            <Text style={styles.optionText}>USD</Text>
+          </TouchableOpacity>
+
+          {/* Add more exchange options as needed */}
+        </View>
+      </Modalize>
+
+      <Modalize
+        ref={modalizeRef2}
+        snapPoint={350} // Set the height of the bottom sheet
+        modalHeight={350} // Set the maximum height
+        withHandle={false} // Optionally disable the handle for more compact design
+      >
+        <View style={styles.bottomSheetContent}>
+          <Text style={styles.bottomSheetTitle}>Top up Methods</Text>
+
+          {/* Example exchange options */}
+          <TouchableOpacity style={styles.exchangeOption}>
+            <View style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
+            <AntDesign name="bank" size={20} color={'#000'}/>
+            <View style={styles.currencyItem}>
+              <Text style={styles.optionText}>Fund with bank transfer</Text>
+              <Text style={styles.subText}>Tap to view details</Text>
+            </View>
+            </View>
+            <AntDesign name="right" size={16}/>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.exchangeOption}>
+            <View style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
+            <AntDesign name="wallet" size={20} color={'#000'}/>
+            <View style={styles.currencyItem}>
+              <Text style={styles.optionText}>Fund with other wallets</Text>
+              <Text style={styles.subText}>Use your other currency wallets</Text>
+            </View>
+            </View>
+            <AntDesign name="right" size={16}/>
+          </TouchableOpacity>
+
+          {/* Add more exchange options as needed */}
+        </View>
+      </Modalize>
+      
       <StatusBar style="light"/>
     </ScrollView>
   );
@@ -152,7 +231,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
-    height: 240,
+    height: 260,
     paddingTop: 45,
   },
   
@@ -196,7 +275,7 @@ const styles = StyleSheet.create({
   },
   balanceAmount: {
     color: "#fff",
-    fontSize: 24,
+    fontSize: 28,
     textAlign: "center",
     fontWeight: "bold",
 
@@ -272,8 +351,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   icon:{
-    width: 30,
-    height: 30,
+    width: 35,
+    height: 35,
     resizeMode: 'contain'
   },
   tabicon:{
@@ -317,5 +396,46 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     marginTop: 5,
     textAlign: 'center'
+  },
+  bottomSheetContent:{
+    padding: 20,
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+  },
+  bottomSheetTitle:{
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 30,
+    textAlign: "center",
+  },
+  exchangeOption:{
+    padding: 15,
+    backgroundColor: "#f6f6f6",
+    marginBottom: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    borderRadius: 10,
+    justifyContent: "space-between",
+  },
+  optionText:{
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#333",
+  },
+  subText:{
+    fontSize: 12,
+    color: "#999",
+    marginTop: 5,
+  },
+  exchangeOptionButton:{
+    padding: 15,
+    backgroundColor: "#f6f6f6",
+    marginBottom: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    borderRadius: 10,
   }
 });
