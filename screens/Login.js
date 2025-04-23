@@ -13,6 +13,9 @@ import COLORS from "../constants/colors";
 import { Image } from "expo-image";
 import FONTS from "../constants/fonts";
 import * as LocalAuthentication from 'expo-local-authentication';
+import useSignupStore from '../store/useSignupStore';
+import Toast from 'react-native-toast-message';
+
 
 
 const Login = ({ navigation }) => {
@@ -22,6 +25,36 @@ const Login = ({ navigation }) => {
   const [loginMethod, setLoginMethod] = useState('phone'); // 'phone' or 'email'
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+
+  const { login } = useSignupStore();
+
+const handleLogin = async () => {
+  setIsLoading(true);
+
+  const credentials = loginMethod === 'email'
+  ? { email, password }
+  : { phone: `0${phone}`, password }; // Remove the +234 and use 080... format if backend expects that
+
+
+  const result = await login(credentials);
+  setIsLoading(false);
+
+  console.log('Login payload:', credentials);
+console.log('Login result:', result);
+
+
+  if (result.success) {
+    navigation.replace("BottomTab");
+  } else {
+    Toast.show({
+      type: 'error',
+      text1: 'Login Failed',
+      text2: result.message || 'Something went wrong. Please try again.',
+    });
+    
+  }
+};
 
 
   // Handle button press
@@ -38,13 +71,23 @@ const Login = ({ navigation }) => {
   const handleBiometricAuth = async () => {
     const compatible = await LocalAuthentication.hasHardwareAsync();
     if (!compatible) {
-      alert("Biometric authentication not supported on this device.");
+      Toast.show({
+        type: 'error',
+        text1: 'Unsupported',
+        text2: 'Biometric authentication not supported on this device.',
+      });
+      
       return;
     }
   
     const enrolled = await LocalAuthentication.isEnrolledAsync();
     if (!enrolled) {
-      alert("No biometrics enrolled. Please set up Face ID or Touch ID.");
+      Toast.show({
+        type: 'error',
+        text1: 'Not Enrolled',
+        text2: 'No biometrics enrolled. Please set up Face ID or Touch ID.',
+      });
+      
       return;
     }
   
@@ -58,7 +101,12 @@ const Login = ({ navigation }) => {
     if (result.success) {
       navigation.navigate("BottomTab");
     } else {
-      alert("Authentication failed.");
+      Toast.show({
+        type: 'error',
+        text1: 'Authentication Failed',
+        text2: 'Biometric authentication failed. Try again.',
+      });
+      
     }
   };
   
@@ -127,6 +175,8 @@ const Login = ({ navigation }) => {
           placeholder="***********"
           onFocus={() => setFocusedInput("password")}
           onBlur={() => setFocusedInput(null)}
+          value={password}
+          onChangeText={setPassword}
         />
         <TouchableOpacity onPress={() => setPasswordVisible(!passwordVisible)}>
           <Ionicons name={passwordVisible ? "eye-off" : "eye"} size={20} color="gray" />
@@ -140,7 +190,7 @@ const Login = ({ navigation }) => {
 
 
       {/* Submit Button */}
-      <TouchableOpacity style={styles.button} onPress={handleSignupPress} disabled={isLoading}>
+      <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={isLoading}>
         {isLoading ? (
           <Image
             source={require("../assets/icons/loader.gif")}
@@ -151,13 +201,9 @@ const Login = ({ navigation }) => {
           <Text style={styles.buttonText}>Log In</Text>
         )}
       </TouchableOpacity>
-      
-
       {/* Bottom Link */}
-      
-
       <View style={styles.biometricContainer}>
-        <TouchableOpacity style={styles.biometricButton} onPress={handleBiometricAuth}>
+        <TouchableOpacity style={styles.biometricButton}>
           <Ionicons name="finger-print" size={24} color="white" />
           <Text style={styles.biometricText}>Use Biometric</Text>
         </TouchableOpacity>

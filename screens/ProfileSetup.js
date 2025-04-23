@@ -1,16 +1,49 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, KeyboardAvoidingView, Platform, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import { AntDesign } from "@expo/vector-icons";
 import FONTS from '../constants/fonts';
 import COLORS from '../constants/colors';
 import Header from '../components/Header';
 import { Modalize } from 'react-native-modalize';
+import useSignupStore from '../store/useSignupStore'; // if not already imported
+import { useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Toast from 'react-native-toast-message';
+
+
 
 const ProfileSetup = ({ navigation }) => {
   const [otp, setOtp] = useState('');
   const [timer, setTimer] = useState(60);
   const [isResendDisabled, setIsResendDisabled] = useState(true);
   const [femoTag, setFemoTag] = useState('@'); // Ensure @ is always prefixed
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const { email } = useSignupStore(); // assuming email was stored after signup
+  const { user } = useSignupStore(); // user should have 'id'
+
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     AsyncStorage.setItem('lastVisitedScreen', 'ProfileSetup'); // change accordingly
+  //   }, [])
+  // );
+
+  useEffect(() => {
+    const fetchUserId = async () => {
+      if (!user?.id) {
+        const storedId = await AsyncStorage.getItem("userId");
+        if (storedId) {
+          console.log("Recovered userId from AsyncStorage:", storedId);
+          // Use this storedId for your profile setup
+        } else {
+          alert("Missing user ID. Please login again.");
+          navigation.navigate("Login"); // or other fallback
+        }
+      }
+    };
+    fetchUserId();
+  }, []);
+  
 
     const modalizeRef = useRef(null); // Reference to control the bottom sheet
   
@@ -42,6 +75,68 @@ const ProfileSetup = ({ navigation }) => {
     }
   };
 
+  const handleProfileSubmit = async () => {
+    try {
+      let userId = user?.id;
+  
+      if (!userId) {
+        userId = await AsyncStorage.getItem("userId");
+      }
+  
+      if (!userId) {
+        Toast.show({
+          type: 'error',
+          text1: 'Missing ID',
+          text2: 'Missing user ID. Please login again.',
+        });
+        navigation.navigate("Login");
+        return;
+      }
+  
+      const token = await AsyncStorage.getItem("token");
+      const response = await fetch(`https://femopay-startup.onrender.com/api/v1/auth/onboard/${userId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          tagName: femoTag.replace('@', ''),
+        }),
+      });
+  
+      const res = await response.json();
+  
+      if (response.ok) {
+        Toast.show({
+          type: 'success',
+          text1: 'Success',
+          text2: res.message || "Profile setup complete",
+        });
+        navigation.navigate("SetTransactionPin");
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: 'Error',
+          text2: res.message || "Profile setup failed",
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: "Something went wrong. Try again.",
+      });
+    }
+  };
+  
+  
+  
+  
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View
@@ -63,6 +158,8 @@ const ProfileSetup = ({ navigation }) => {
             placeholderTextColor="#BEBEBE"
             keyboardType="default"
             maxLength={15}
+            value={firstName}
+            onChangeText={setFirstName}
           />
           <TextInput
             style={styles.input}
@@ -70,6 +167,8 @@ const ProfileSetup = ({ navigation }) => {
             placeholderTextColor="#BEBEBE"
             keyboardType="default"
             maxLength={15}
+            value={lastName}
+            onChangeText={setLastName}
           />
         </View>
 
@@ -93,7 +192,7 @@ const ProfileSetup = ({ navigation }) => {
 
       <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate('SetTransactionPin')}
+        onPress={handleProfileSubmit}
       >
         <Text style={styles.buttonText}>Continue</Text>
       </TouchableOpacity>

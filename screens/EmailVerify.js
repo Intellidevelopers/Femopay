@@ -1,13 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { AntDesign } from "@expo/vector-icons";
 import FONTS from '../constants/fonts';
 import COLORS from '../constants/colors';
+import useSignupStore from "../store/useSignupStore";
+import Toast from 'react-native-toast-message';
+
+
 
 const EmailVerify = ({ navigation }) => {
   const [otp, setOtp] = useState('');
   const [timer, setTimer] = useState(60);
   const [isResendDisabled, setIsResendDisabled] = useState(true);
+  const { email } = useSignupStore();
+
 
   useEffect(() => {
     let interval = null;
@@ -23,6 +29,85 @@ const EmailVerify = ({ navigation }) => {
     };
   }, [timer]);
 
+  const handleVerifyOtp = async () => {
+    try {
+      const response = await fetch("https://femopay-startup.onrender.com/api/v1/auth/verify-otp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          otp
+        }),
+      });
+  
+      const res = await response.json();
+  
+      if (response.ok) {
+        Toast.show({
+          type: 'success',
+          text1: 'Success',
+          text2: res.message || "Email verified successfully",
+        });
+        navigation.navigate("ProfileSetup");
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: 'Verification Failed',
+          text2: res.message || "Verification failed",
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: "Something went wrong. Try again.",
+      });
+    }
+  };
+
+  const handleResendOtp = async () => {
+    try {
+      const response = await fetch("https://femopay-startup.onrender.com/api/v1/auth/resend-otp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+  
+      const res = await response.json();
+  
+      if (response.ok) {
+        Toast.show({
+          type: 'success',
+          text1: 'OTP Sent',
+          text2: res.message || 'OTP resent successfully',
+        });
+        setTimer(60);
+        setIsResendDisabled(true);
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: 'Failed to resend',
+          text2: res.message || 'Could not resend OTP',
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Something went wrong. Try again.',
+      });
+    }
+  };
+  
+  
+  
+
   return (
     <View style={styles.container}>
     <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
@@ -33,7 +118,7 @@ const EmailVerify = ({ navigation }) => {
       <ScrollView style={styles.content}>
       <Text style={styles.title}>Confirm your email</Text>
       <Text style={styles.subtitle}>
-        Please enter the code sent to this email <Text style={styles.boldText}>sample@gmail.com</Text>
+        Please enter the code sent to this email <Text style={styles.boldText}>{email}</Text>
       </Text>
 
       {/* OTP Input */}
@@ -52,7 +137,7 @@ const EmailVerify = ({ navigation }) => {
       <View style={styles.bottomContainer}>
         <View style={styles.resendContainer}>
             <Text style={styles.resendText}>Didn’t receive a code?</Text>
-            <TouchableOpacity disabled={isResendDisabled} onPress={() => { setTimer(60); setIsResendDisabled(true); }}>
+            <TouchableOpacity disabled={isResendDisabled} onPress={handleResendOtp}>
             <Text style={[styles.resendButton, isResendDisabled && styles.disabledResend]}>
                 {isResendDisabled ? `Resend in ${timer}s` : 'Resend'}
             </Text>
@@ -60,7 +145,7 @@ const EmailVerify = ({ navigation }) => {
         </View>
         {/* Continue Button */}
         <TouchableOpacity style={[styles.button, otp.length === 0 && styles.disabledButton]} disabled={otp.length === 0}
-            onPress={() => navigation.navigate('ProfileSetup')}
+             onPress={handleVerifyOtp}
         >
             <Text style={styles.buttonText}>Continue</Text>
         </TouchableOpacity>

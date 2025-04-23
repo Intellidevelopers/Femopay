@@ -6,27 +6,99 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  Modal,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
 import COLORS from "../constants/colors";
 import { Image } from "expo-image";
+import useSignupStore from "../store/useSignupStore";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import Toast from 'react-native-toast-message';
+
 
 const Signup = ({ navigation }) => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [focusedInput, setFocusedInput] = useState(null);
+  const [showEmailExistsModal, setShowEmailExistsModal] = useState(false);
 
-  // Handle button press
-  const handleSignupPress = () => {
+
+  const {
+    phoneNumber,
+    username,
+    email,
+    password,
+    setPhoneNumber,
+    setUsername,
+    setEmail,
+    setPassword,
+    setUserData,
+  } = useSignupStore();
+  
+  
+  const handleSignupPress = async () => {
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false); // Simulate API call completion
-    navigation.navigate("EmailVerify");
-
-    }, 2000);
-    // Navigate to the next screen with the entered phone number and password
+  
+    try {
+      const response = await fetch("https://femopay-startup.onrender.com/api/v1/auth/sign-up", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userName: username,
+          email,
+          password,
+          phone: phoneNumber,
+          role: "user",
+        }),
+      });
+  
+      const res = await response.json();
+  
+      if (response.ok) {
+        const user = res.data;
+        const userId = user._id;
+      
+        if (user && userId) {
+          setUserData(user);
+          await AsyncStorage.setItem("userId", userId);
+          Toast.show({
+            type: 'success',
+            text1: 'Account created!',
+            text2: 'Redirecting to verification...',
+          });
+          navigation.navigate("EmailVerify");
+        } else {
+          Toast.show({
+            type: 'info',
+            text1: 'Signup successful',
+            text2: 'No user ID returned, please try again.',
+          });
+        }
+      } else {
+        const errorMessage = res.message || "Signup failed.";
+        if (errorMessage.includes("user with this email already exist but not verified")) {
+          setShowEmailExistsModal(true);
+        } else {
+          Toast.show({
+            type: 'error',
+            text1: 'Signup Failed',
+            text2: errorMessage,
+          });
+        }
+      }
+      
+    } catch (error) {
+      console.error(error);
+      alert("Something went wrong.");
+    } finally {
+      setIsLoading(false);
+    }
   };
+  
+  
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -54,6 +126,8 @@ const Signup = ({ navigation }) => {
           style={[styles.input, { flex: 1 }]}
           keyboardType="numeric"
           placeholder="9012345678"
+          value={phoneNumber}
+          onChangeText={setPhoneNumber}
           onFocus={() => setFocusedInput("phone")}
           onBlur={() => setFocusedInput(null)}
         />
@@ -70,9 +144,12 @@ const Signup = ({ navigation }) => {
         <TextInput
           style={styles.input}
           placeholder="@femopay123"
+          value={username}
+          onChangeText={setUsername}
           onFocus={() => setFocusedInput("username")}
           onBlur={() => setFocusedInput(null)}
         />
+
       </View>
       <Text style={styles.helperText}>
         * Username can contain only letters and underscores, minimum of two letters
@@ -90,9 +167,12 @@ const Signup = ({ navigation }) => {
           style={styles.input}
           keyboardType="email-address"
           placeholder="sample@gmail.com"
+          value={email}
+          onChangeText={setEmail}
           onFocus={() => setFocusedInput("email")}
           onBlur={() => setFocusedInput(null)}
         />
+
       </View>
 
       {/* Password Input */}
@@ -108,9 +188,12 @@ const Signup = ({ navigation }) => {
           style={[styles.input, { flex: 1 }]}
           secureTextEntry={!passwordVisible}
           placeholder="************"
+          value={password}
+          onChangeText={setPassword}
           onFocus={() => setFocusedInput("password")}
           onBlur={() => setFocusedInput(null)}
         />
+
         <TouchableOpacity onPress={() => setPasswordVisible(!passwordVisible)}>
           <Ionicons name={passwordVisible ? "eye-off" : "eye"} size={20} color="gray" />
         </TouchableOpacity>
@@ -143,6 +226,31 @@ const Signup = ({ navigation }) => {
         </TouchableOpacity>
       </View>
       <StatusBar style="dark" backgroundColor="#fff" />
+      <Modal
+        transparent={true}
+        animationType="fade"
+        visible={showEmailExistsModal}
+        onRequestClose={() => setShowEmailExistsModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Email Not Verified</Text>
+            <Text style={styles.modalText}>
+              A user with this email already exists but hasn't verified their email. Please proceed to verify.
+            </Text>
+            <TouchableOpacity
+              style={styles.modalButton}
+              onPress={() => {
+                setShowEmailExistsModal(false);
+                navigation.navigate("EmailVerify");
+              }}
+            >
+              <Text style={styles.modalButtonText}>Proceed to Verify</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
     </ScrollView>
   );
 };
@@ -245,7 +353,48 @@ const styles = StyleSheet.create({
     paddingHorizontal: 1,
     justifyContent: "center",
     gap: 5
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainer: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 10,
+    width: '85%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  modalText: {
+    fontSize: 14,
+    marginBottom: 20,
+    textAlign: 'center',
+    color: '#333',
+  },
+  modalButton: {
+    backgroundColor: COLORS.primary, // use your app’s primary color
+    paddingVertical: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  modalButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   }
+  
 });
 
 export default Signup;

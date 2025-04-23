@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useCallback } from "react";
 import {
   StyleSheet,
   Text,
@@ -14,6 +14,8 @@ import { AntDesign } from "react-native-vector-icons/";
 import FONTS from "../constants/fonts";
 import { StatusBar } from "expo-status-bar";
 import { Modalize } from "react-native-modalize"; // Importing the Modalize component
+import { useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const HomeScreen = ({ navigation }) => {
   const modalizeRef = useRef(null); // Reference to control the bottom sheet
@@ -30,11 +32,17 @@ const HomeScreen = ({ navigation }) => {
     modalizeRef2.current?.open();
   };
 
+    //   useFocusEffect(
+    //   useCallback(() => {
+    //     AsyncStorage.setItem('lastVisitedScreen', 'BottomTab'); // change accordingly
+    //   }, [])
+    // );
+
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* Top Balance Card */}
       <LinearGradient
-        colors={["#6F0100", "#A60506"]} // Dark red on left, Light red on right
+        colors={["#4E0605", "#A60506"]} // Dark red on left, Light red on right
         start={{ x: 0, y: 0 }} // Start from the left
         end={{ x: 1, y: 0 }}   // End at the right
         style={styles.topCard}
@@ -42,7 +50,7 @@ const HomeScreen = ({ navigation }) => {
 
         {/* User Info */}
         <View style={styles.userRow}>
-          <Image source={require('../assets/images/me.png')} style={styles.avatar} />
+          <Image source={require('../assets/icons/user.png')} style={styles.avatar} />
           <TouchableOpacity onPress={openCurrencyExchangeModal} style={styles.currencyContainer}>
               <Image source={require('../assets/flag.png')} style={styles.flag} />
               <Text style={styles.currencyText}>NG Naira</Text>

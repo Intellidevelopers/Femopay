@@ -26,8 +26,12 @@ import SuccessScreen from "./screens/SuccessScreen";
 import ForgotPassword from "./screens/ForgotPassword";
 import ChangePassword from "./screens/ChangePassword";
 import Notifications from "./screens/Notifications";
-import EditProfile from "./screens/EditProfile";
-import { Provider as PaperProvider } from 'react-native-paper';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useEffect, useState } from 'react';
+import ComingSoon from "./screens/ComingSoon";
+import Toast from 'react-native-toast-message';
+
+// import EditProfile from "./screens/EditProfile";
 
 SplashScreen.preventAutoHideAsync(); // Prevent splash screen from auto-hiding
 
@@ -35,6 +39,7 @@ SplashScreen.preventAutoHideAsync(); // Prevent splash screen from auto-hiding
 const Stack = createStackNavigator();
 
 export default function App() {
+  const [initialRoute, setInitialRoute] = useState(null);
   const [fontsLoaded] = useFonts({
     [FONTS.regular]: require("./assets/fonts/Poppins-Regular.ttf"),
     [FONTS.bold]: require("./assets/fonts/Poppins-Bold.ttf"),
@@ -42,6 +47,7 @@ export default function App() {
     [FONTS.medium]: require("./assets/fonts/Poppins-Medium.ttf"),
     [FONTS.semiBold]: require("./assets/fonts/Poppins-SemiBold.ttf"),
   });
+  
 
   const onLayout = useCallback(async () => {
     if (fontsLoaded) {
@@ -53,7 +59,6 @@ export default function App() {
 
   return (
     <View style={styles.container} onLayout={onLayout}>
-      <PaperProvider>
       <GestureHandlerRootView style={{ flex: 1 }}>
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -74,11 +79,13 @@ export default function App() {
           <Stack.Screen name="ForgotPassword" component={ForgotPassword}/>
           <Stack.Screen name="ChangePassword" component={ChangePassword}/>
           <Stack.Screen name="Notifications" component={Notifications} />
-          <Stack.Screen name="EditProfile" component={EditProfile} />
+          <Stack.Screen name="ComingSoon" component={ComingSoon} />
+          {/* <Stack.Screen name="EditProfile" component={EditProfile} /> */}
         </Stack.Navigator>
+        <Toast />
+
       </NavigationContainer>
       </GestureHandlerRootView>
-      </PaperProvider>
     </View>
   );
 }

@@ -1,18 +1,25 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
+  ActivityIndicator ,
   ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import COLORS from "../constants/colors"; // Make sure this exists
 import Header from "../components/Header";
+import useSignupStore from '../store/useSignupStore'; // if not already imported
+import { useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Toast from 'react-native-toast-message';
+
 
 const SetTransactionPin = ({ navigation }) => {
   const [pin, setPin] = useState("");
+  const [loading, setLoading] = useState(false);
+
 
   const handlePress = (digit) => {
     if (pin.length < 4) {
@@ -22,16 +29,77 @@ const SetTransactionPin = ({ navigation }) => {
 
   useEffect(() => {
     if (pin.length === 4) {
-      // Navigate to VerifyTransactionPin and pass the entered pin
-      navigation.navigate("VerifyTransactionPin", { pin });
+      setTransactionPin(pin);
     }
   }, [pin]);
+  const setTransactionPin = async (finalPin) => {
+    setLoading(true);
+    try {
+      const userId = await AsyncStorage.getItem("userId");
   
+      if (!userId) {
+        Toast.show({
+          type: 'error',
+          text1: 'User not found',
+          text2: 'Please log in again.',
+        });
+        return;
+      }
+  
+      const response = await fetch("https://femopay-startup.onrender.com/api/v1/auth/set-pin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, pin: finalPin }),
+      });
+  
+      const res = await response.json();
+  
+      if (response.ok) {
+        Toast.show({
+          type: 'success',
+          text1: 'Success',
+          text2: res.message || "Transaction PIN set successfully",
+        });
+        navigation.navigate("VerifyTransactionPin", { pin });
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: 'Failed to set PIN',
+          text2: res.message || "Please try again.",
+        });
+        setPin(""); // reset for retry
+      }
+    } catch (error) {
+      console.error("Error setting PIN:", error);
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: "An error occurred while setting your PIN.",
+      });
+      setPin("");
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </View>
+    );
+  }
 
   const handleBackspace = () => {
     setPin(pin.slice(0, -1));
   };
 
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     AsyncStorage.setItem('lastVisitedScreen', 'SetTransactionPin'); // change accordingly
+  //   }, [])
+  // );
   const renderDots = () => {
     return (
       <View style={styles.dotsContainer}>
@@ -147,6 +215,13 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "600",
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "white", // or use a semi-transparent overlay if you prefer
+  },
+  
 });
 
 export default SetTransactionPin;
