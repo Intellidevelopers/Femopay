@@ -6,6 +6,7 @@ import {
   Image,
   TouchableOpacity,
   ScrollView,
+  FlatList
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import COLORS from "../constants/colors";
@@ -16,9 +17,49 @@ import { StatusBar } from "expo-status-bar";
 import { Modalize } from "react-native-modalize"; // Importing the Modalize component
 import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import TransactionHistory from "./TransactionHistory";
+import useTransactionStore from '../store/useTransactionStore';
+
+const transactions = [
+  {
+    id: '1',
+    type: 'Spend & Save Deposit',
+    amount: '₦300.00',
+    status: 'Successful',
+    date: 'Apr 24th, 08:09:35',
+    icon: require('../assets/success.png'),
+    transactionId: 'QWERTYUIOPASD',
+    sender: 'Faith Adeyemi',
+    receiver: 'Joy Amadi',
+  },
+  {
+    id: '2',
+    type: 'Bonus from Data Purchase',
+    amount: '+₦15.00',
+    status: 'Successful',
+    date: 'Apr 24th, 08:09:35',
+    icon: require('../assets/success.png'),
+    transactionId: 'QWERTYUIOPASD',
+    sender: 'Faith Adeyemi',
+    receiver: 'Joy Amadi',
+  },
+  {
+    id: '3',
+    type: 'Mobile Data',
+    amount: '-₦1,500.00',
+    status: 'Successful',
+    date: 'Apr 24th, 08:09:27',
+    icon: require('../assets/success.png'),
+    transactionId: 'QWERTYUIOPASD',
+    sender: 'Faith Adeyemi',
+    receiver: 'Joy Amadi',
+  },
+
+];
 
 const HomeScreen = ({ navigation }) => {
   const modalizeRef = useRef(null); // Reference to control the bottom sheet
+  const { setTransactions, selectTransaction } = useTransactionStore();
 
   // Function to open the bottom sheet
   const openCurrencyExchangeModal = () => {
@@ -37,6 +78,11 @@ const HomeScreen = ({ navigation }) => {
     //     AsyncStorage.setItem('lastVisitedScreen', 'BottomTab'); // change accordingly
     //   }, [])
     // );
+
+
+  React.useEffect(() => {
+    setTransactions(transactions); // you can also fetch from API and set here
+  }, []);
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -110,7 +156,7 @@ const HomeScreen = ({ navigation }) => {
 
             <TouchableOpacity style={[styles.card, {backgroundColor: '#F0EFFD'}]}>
               <Image source={require('../assets/icons/cashtag.png')} style={styles.cardIcon} />
-              <Text style={styles.cardText}>CashTag</Text>
+              <Text style={styles.cardText}>FemoTag</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -140,7 +186,7 @@ const HomeScreen = ({ navigation }) => {
           </View>
         </View>
 
-        <View style={styles.section}>
+        {/* <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>More Services</Text>
             <Text style={styles.more}>See more</Text>
@@ -159,9 +205,45 @@ const HomeScreen = ({ navigation }) => {
               <Text style={styles.cardText}>Redeem Card</Text>
             </TouchableOpacity>
           </View>
+        </View> */}
+      {/* Transaction History */}
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Recent Transaction</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('TransactionHistory')}>
+          <Text style={styles.more}>See more</Text>
+          </TouchableOpacity>
         </View>
       </View>
-{/* Modal Bottom Sheet */}
+        {/* Transaction History List */}
+      <FlatList
+        data={transactions}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <TouchableOpacity onPress={() => {
+            selectTransaction(item);
+            navigation.navigate('TransactionReceipt');
+          }} style={styles.transactionItem}>
+            <Image source={item.icon} style={styles.ticon} />
+            <View style={styles.details}>
+              <Text style={styles.title}>{item.type}</Text>
+              <Text style={styles.date}>{item.date}</Text>
+            </View>
+            <View style={styles.amountContainer}>
+              <Text style={[
+                styles.amount,
+                { color: item.amount.startsWith('-') ? 'red' : 'green' }
+              ]}>
+                {item.amount}
+              </Text>
+              <Text style={styles.status}>{item.status}</Text>
+            </View>
+          </TouchableOpacity>
+        )}
+      />
+      </View>
+
+      {/* Modal Bottom Sheet */}
       <Modalize
         ref={modalizeRef}
         snapPoint={320} // Set the height of the bottom sheet
@@ -445,5 +527,41 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 10,
     borderRadius: 10,
+  },
+  transactionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  details: {
+    flex: 1,
+  },
+  title: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#000',
+  },
+  date: {
+    fontSize: 12,
+    color: '#888',
+  },
+  amountContainer: {
+    alignItems: 'flex-end',
+  },
+  amount: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  status: {
+    fontSize: 12,
+    color: 'green',
+  },
+  ticon:{
+    width: 40,
+    height: 40,
+    marginRight: 10,
+    borderRadius: 20,
   }
 });

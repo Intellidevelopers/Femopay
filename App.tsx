@@ -30,6 +30,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import ComingSoon from "./screens/ComingSoon";
 import Toast from 'react-native-toast-message';
+import TransactionHistory from "./screens/TransactionHistory";
+import TransactionReceipt from "./screens/TransactionReceipt";
 
 // import EditProfile from "./screens/EditProfile";
 
@@ -80,6 +82,8 @@ export default function App() {
           <Stack.Screen name="ChangePassword" component={ChangePassword}/>
           <Stack.Screen name="Notifications" component={Notifications} />
           <Stack.Screen name="ComingSoon" component={ComingSoon} />
+          <Stack.Screen name="TransactionHistory" component={TransactionHistory} />
+          <Stack.Screen name="TransactionReceipt" component={TransactionReceipt} />
           {/* <Stack.Screen name="EditProfile" component={EditProfile} /> */}
         </Stack.Navigator>
         <Toast />

@@ -10,7 +10,7 @@ const WelcomeScreen = () => {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      navigation.replace("Signup"); // Navigate to Signup after 3s
+      navigation.replace("Login"); // Navigate to Signup after 3s
     }, 3000);
 
     return () => clearTimeout(timer);

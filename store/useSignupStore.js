@@ -50,8 +50,6 @@ login: async (credentials) => {
     }
   },
   
-  
-
   logout: async () => {
     await AsyncStorage.clear();
     set({
